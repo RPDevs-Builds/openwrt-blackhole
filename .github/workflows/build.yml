@@ -1,0 +1,42 @@
+name: Build OpenWRT Packages
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: openwrt/sdk:aarch64_cortex-a53-23.05.3
+    
+    steps:
+    - name: Checkout Feed
+      uses: actions/checkout@v4
+      with:
+        path: custom_feed
+
+    - name: Setup Build Environment
+      run: |
+        sudo chown -R buildbot:buildbot .
+        echo "src-link custom /builder/workspace/custom_feed" >> feeds.conf.default
+        ./scripts/feeds update custom
+        ./scripts/feeds install blackhole luci-app-blackhole
+        make defconfig
+
+    - name: Build Packages
+      run: |
+        make package/blackhole/compile V=s
+        make package/luci-app-blackhole/compile V=s
+
+    - name: Collect Artifacts
+      run: |
+        mkdir -p /builder/workspace/artifacts
+        find bin/packages/ -name "*.ipk" -exec cp {} /builder/workspace/artifacts/ \;
+        find bin/packages/ -name "*.apk" -exec cp {} /builder/workspace/artifacts/ \; || true
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: openwrt-packages-arm64
+        path: /builder/workspace/artifacts/*
