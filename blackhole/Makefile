@@ -43,6 +43,10 @@ endef
 GO_PKG:=github.com/IamRPDev/blackhole-server
 GO_PKG_BUILD_PKG:=github.com/IamRPDev/blackhole-server/cmd/blackhole
 
+define Build/Compile
+	$(call GoPackage/Build/Compile)
+endef
+
 define Package/blackhole/install
 	$(call GoPackage/Package/Install/Bin,$(1))
 	$(INSTALL_DIR) $(1)/etc/config
