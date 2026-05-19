@@ -14,7 +14,13 @@ PKG_LICENSE_FILES:=LICENSE
 
 PKG_BUILD_DEPENDS:=golang/host
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/golang-package.mk
+
+# Check for golang-package.mk in the standard include directory, otherwise try the feeds directory
+ifneq ($(wildcard $(INCLUDE_DIR)/golang-package.mk),)
+  include $(INCLUDE_DIR)/golang-package.mk
+else
+  include $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk
+endif
 
 define Package/blackhole
   SECTION:=utils
