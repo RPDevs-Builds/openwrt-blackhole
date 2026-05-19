@@ -25,7 +25,10 @@ jobs:
           # Update all feeds
           ./scripts/feeds update -a &&
           
-          # Install 'packages' and 'routing' feeds to ensure golang dependencies are present
+          # Explicitly install 'packages' feed to ensure golang-package.mk exists
+          ./scripts/feeds install packages &&
+          
+          # Install other feeds
           ./scripts/feeds install -a &&
           
           # Add custom feed
