@@ -22,8 +22,10 @@ jobs:
       run: |
         mkdir -p artifacts
         docker run --rm -v ${{ github.workspace }}:/custom_feed openwrt/sdk:aarch64_cortex-a53-snapshot bash -c "
-          # Update and install all feeds to get golang infrastructure
+          # Update all feeds
           ./scripts/feeds update -a &&
+          
+          # Install 'packages' and 'routing' feeds to ensure golang dependencies are present
           ./scripts/feeds install -a &&
           
           # Add custom feed
