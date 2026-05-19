@@ -14,18 +14,7 @@ PKG_LICENSE_FILES:=LICENSE
 
 PKG_BUILD_DEPENDS:=golang/host
 include $(INCLUDE_DIR)/package.mk
-
-# Find golang-package.mk in common SDK locations
-GOLANG_MK:=$(wildcard $(INCLUDE_DIR)/golang-package.mk)
-ifeq ($(GOLANG_MK),)
-  GOLANG_MK:=$(wildcard $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk)
-endif
-
-ifneq ($(GOLANG_MK),)
-  include $(GOLANG_MK)
-else
-  $(error golang-package.mk not found. Ensure the packages feed is installed and golang is available.)
-endif
+include $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk
 
 define Package/blackhole
   SECTION:=utils
@@ -42,10 +31,6 @@ endef
 
 GO_PKG:=github.com/IamRPDev/blackhole-server
 GO_PKG_BUILD_PKG:=github.com/IamRPDev/blackhole-server/cmd/blackhole
-
-define Build/Compile
-	$(call GoPackage/Build/Compile)
-endef
 
 define Package/blackhole/install
 	$(call GoPackage/Package/Install/Bin,$(1))
