@@ -14,7 +14,18 @@ PKG_LICENSE_FILES:=LICENSE
 
 PKG_BUILD_DEPENDS:=golang/host
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/golang-package.mk
+
+# Find golang-package.mk in common SDK locations
+GOLANG_MK:=$(wildcard $(INCLUDE_DIR)/golang-package.mk)
+ifeq ($(GOLANG_MK),)
+  GOLANG_MK:=$(wildcard $(TOPDIR)/feeds/packages/lang/golang/golang-package.mk)
+endif
+
+ifneq ($(GOLANG_MK),)
+  include $(GOLANG_MK)
+else
+  $(error golang-package.mk not found. Ensure the packages feed is installed and golang is available.)
+endif
 
 define Package/blackhole
   SECTION:=utils
