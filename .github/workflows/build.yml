@@ -35,9 +35,13 @@ jobs:
         chmod -R a+rwX artifacts
         
         docker run --rm -v ${{ github.workspace }}:/custom_feed -e GOCACHE=/custom_feed/.gocache openwrt/sdk:aarch64_cortex-a53-snapshot bash -c "
-          # Update and install feeds (must include 'packages' for golang-package.mk)
+          # Update and install feeds
           ./scripts/feeds update -a
           ./scripts/feeds install golang
+          
+          # Explicitly link golang-package.mk into include directory
+          mkdir -p include
+          ln -sf ../feeds/packages/lang/golang/golang-package.mk include/golang-package.mk
           
           # Add and install custom feed
           echo 'src-link custom /custom_feed' >> feeds.conf.default
@@ -46,14 +50,14 @@ jobs:
           
           # Build packages
           make defconfig
-          make package/blackhole/compile V=s || (echo 'Build failed' && exit 1)
+          make package/blackhole/compile V=s || (echo 'Blackhole build failed' && exit 1)
           make package/luci-app-blackhole/compile V=s || (echo 'LuCI app build failed' && exit 1)
           
           # Index packages
           [ -x ./staging_dir/host/bin/usign ] && [ ! -f key-build ] && ./staging_dir/host/bin/usign -G -s ./key-build -p ./key-build.pub -c 'Build key'
           make package/index V=s CONFIG_SIGNED_PACKAGES=
           
-          # Copy artifacts (ensure we only copy what we built)
+          # Copy artifacts
           mkdir -p /custom_feed/artifacts/aarch64_cortex-a53
           cp -v bin/packages/aarch64_cortex-a53/custom/* /custom_feed/artifacts/aarch64_cortex-a53/
           
