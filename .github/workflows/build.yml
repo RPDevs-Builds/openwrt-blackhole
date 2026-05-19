@@ -55,10 +55,12 @@ jobs:
           echo 'CONFIG_PACKAGE_blackhole=y' >> .config
           echo 'CONFIG_PACKAGE_luci-app-blackhole=y' >> .config
           make defconfig
-          
           # Build packages
-          make package/blackhole/compile V=s || (echo 'Blackhole build failed' && exit 1)
-          make package/luci-app-blackhole/compile V=s || (echo 'LuCI app build failed' && exit 1)
+          make defconfig
+          [ -d package/utils/blackhole ] || (echo 'Blackhole directory missing' && exit 1)
+          make package/utils/blackhole/compile V=s || (echo 'Blackhole build failed' && exit 1)
+          make package/utils/luci-app-blackhole/compile V=s || (echo 'LuCI app build failed' && exit 1)
+
           
           # Index packages
           [ -x ./staging_dir/host/bin/usign ] && [ ! -f key-build ] && ./staging_dir/host/bin/usign -G -s ./key-build -p ./key-build.pub -c 'Build key'
