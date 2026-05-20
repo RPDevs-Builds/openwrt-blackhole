@@ -3,7 +3,11 @@
 		"description": "Grant access to blackhole configuration",
 		"read": {
 			"uci": [ "blackhole" ],
-			"file": [ "/mnt/largedata/blackholeserver/blackhole.log" ],
+			"file": [ 
+				"/mnt/largedata/blackholeserver/blackhole.log",
+				"/mnt/largedata/blackholeserver/mirrored/*",
+				"/mnt/largedata/blackholeserver/content/*"
+			],
 			"ubus": {
 				"rc": [ "init" ],
 				"service": [ "list" ]
@@ -11,7 +15,11 @@
 		},
 		"write": {
 			"uci": [ "blackhole" ],
-			"file": [ "/mnt/largedata/blackholeserver/blackhole.log" ],
+			"file": [ 
+				"/mnt/largedata/blackholeserver/blackhole.log",
+				"/mnt/largedata/blackholeserver/mirrored/*",
+				"/mnt/largedata/blackholeserver/content/*"
+			],
 			"ubus": {
 				"uci": [ "apply" ],
 				"rc": [ "init" ],
