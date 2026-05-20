@@ -84,9 +84,8 @@ jobs:
           make defconfig
           
           # Build packages
-          [ -d package/utils/blackhole ] || (echo 'Blackhole directory missing' && exit 1)
-          make package/utils/blackhole/compile V=s || (echo 'Blackhole build failed' && exit 1)
-          make package/utils/luci-app-blackhole/compile V=s || (echo 'LuCI app build failed' && exit 1)
+          make package/blackhole/compile V=s || { echo 'Blackhole build failed'; exit 1; }
+          make package/luci-app-blackhole/compile V=s || { echo 'LuCI app build failed'; exit 1; }
 
           # Index packages
           [ -x ./staging_dir/host/bin/usign ] && [ ! -f key-build ] && ./staging_dir/host/bin/usign -G -s ./key-build -p ./key-build.pub -c 'Build key'
@@ -98,7 +97,7 @@ jobs:
           find bin/packages -name 'Packages*' -exec cp -v {} /custom_feed/artifacts/aarch64_cortex-a53/ \;
           
           # Final check: fail if no IPKs found
-          ls /custom_feed/artifacts/aarch64_cortex-a53/*.ipk || (echo 'No IPK files found!' && exit 1)
+          ls /custom_feed/artifacts/aarch64_cortex-a53/*.ipk || { echo 'No IPK files found!'; exit 1; }
           
           # List files for verification
           echo 'Contents of artifacts:'
