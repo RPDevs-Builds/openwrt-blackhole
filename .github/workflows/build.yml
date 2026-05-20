@@ -18,23 +18,50 @@ jobs:
     - name: Checkout Feed
       uses: actions/checkout@v4
 
-    - name: Cache Go Modules
+    - name: Cache OpenWRT Downloads (dl)
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        path: workspace_cache/dl
+        key: openwrt-dl-${{ runner.os }}
+
+    - name: Cache OpenWRT Feeds
+      uses: actions/cache@v4
+      with:
+        path: workspace_cache/feeds
+        key: openwrt-feeds-${{ runner.os }}-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-go-
+          openwrt-feeds-${{ runner.os }}-
+
+    - name: Cache OpenWRT Host Tools (Go Compiler)
+      uses: actions/cache@v4
+      with:
+        path: workspace_cache/staging_dir_host
+        key: openwrt-host-${{ runner.os }}-${{ github.sha }}
+        restore-keys: |
+          openwrt-host-${{ runner.os }}-
+
+    - name: Cache Go build cache
+      uses: actions/cache@v4
+      with:
+        path: .gocache
+        key: openwrt-gocache-${{ runner.os }}-${{ hashFiles('**/go.mod') }}
+        restore-keys: |
+          openwrt-gocache-${{ runner.os }}-
 
     - name: Build Packages and Index
       run: |
-        # Pre-create artifacts and set permissions
-        mkdir -p artifacts
-        chmod -R a+rwX artifacts
+        # Pre-create artifacts and workspace cache directories to avoid Docker permission issues
+        mkdir -p artifacts workspace_cache/dl workspace_cache/feeds workspace_cache/staging_dir_host .gocache
+        chmod -R a+rwX artifacts workspace_cache .gocache
         
         docker run --rm -v ${{ github.workspace }}:/custom_feed -e GOCACHE=/custom_feed/.gocache openwrt/sdk:aarch64_cortex-a53-snapshot bash -c "
+          # --- CACHE RESTORE PHASE ---
+          echo 'Restoring caches into SDK...'
+          cp -a /custom_feed/workspace_cache/dl/* ./dl/ 2>/dev/null || true
+          cp -a /custom_feed/workspace_cache/feeds/* ./feeds/ 2>/dev/null || true
+          cp -a /custom_feed/workspace_cache/staging_dir_host/* ./staging_dir/host/ 2>/dev/null || true
+          
+          # --- BUILD PHASE ---
           # Update and install feeds
           ./scripts/feeds update -a
           ./scripts/feeds install golang
@@ -55,13 +82,12 @@ jobs:
           echo 'CONFIG_PACKAGE_blackhole=y' >> .config
           echo 'CONFIG_PACKAGE_luci-app-blackhole=y' >> .config
           make defconfig
+          
           # Build packages
-          make defconfig
           [ -d package/utils/blackhole ] || (echo 'Blackhole directory missing' && exit 1)
           make package/utils/blackhole/compile V=s || (echo 'Blackhole build failed' && exit 1)
           make package/utils/luci-app-blackhole/compile V=s || (echo 'LuCI app build failed' && exit 1)
 
-          
           # Index packages
           [ -x ./staging_dir/host/bin/usign ] && [ ! -f key-build ] && ./staging_dir/host/bin/usign -G -s ./key-build -p ./key-build.pub -c 'Build key'
           make package/index V=s CONFIG_SIGNED_PACKAGES=
@@ -77,6 +103,12 @@ jobs:
           # List files for verification
           echo 'Contents of artifacts:'
           ls -lh /custom_feed/artifacts/aarch64_cortex-a53/
+          
+          # --- CACHE SAVE PHASE ---
+          echo 'Extracting caches out of SDK...'
+          cp -a ./dl/* /custom_feed/workspace_cache/dl/ 2>/dev/null || true
+          cp -a ./feeds/* /custom_feed/workspace_cache/feeds/ 2>/dev/null || true
+          cp -a ./staging_dir/host/* /custom_feed/workspace_cache/staging_dir_host/ 2>/dev/null || true
         "
 
     - name: Setup Pages
