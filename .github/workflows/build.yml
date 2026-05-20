@@ -93,6 +93,7 @@ jobs:
           
           # Copy artifacts
           mkdir -p /custom_feed/artifacts/aarch64_cortex-a53
+          cp -v /custom_feed/index.html /custom_feed/artifacts/index.html
           find bin/packages -name '*.ipk' -exec cp -v {} /custom_feed/artifacts/aarch64_cortex-a53/ \;
           find bin/packages -name 'Packages*' -exec cp -v {} /custom_feed/artifacts/aarch64_cortex-a53/ \;
           
