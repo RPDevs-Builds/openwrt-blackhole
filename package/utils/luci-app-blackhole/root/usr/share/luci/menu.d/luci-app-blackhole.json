@@ -1,0 +1,13 @@
+{
+	"admin/services/blackhole": {
+		"title": "Blackhole Webserver",
+		"action": {
+			"type": "view",
+			"path": "blackhole"
+		},
+		"depends": {
+			"acl": [ "luci-app-blackhole" ],
+			"uci": { "blackhole": true }
+		}
+	}
+}
