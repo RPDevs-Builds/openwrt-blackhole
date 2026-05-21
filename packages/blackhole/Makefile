@@ -50,7 +50,7 @@ endef
 define Build/Compile
 	cd $(PKG_BUILD_DIR) && \
 	$(GO_PKG_VARS) \
-	$(GO_BIN) build -v -o blackhole ./cmd/blackhole
+	go build -v -o blackhole ./cmd/blackhole
 endef
 
 define Package/blackhole/install
