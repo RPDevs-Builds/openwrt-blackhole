@@ -86,19 +86,25 @@ jobs:
           ln -sf ../feeds/packages/lang/golang/golang-package.mk include/golang-package.mk
           ln -sf ../feeds/packages/lang/golang/golang-values.mk include/golang-values.mk
           
-          echo 'src-link custom /custom_feed' >> feeds.conf.default
+          # Use the packages subdirectory to avoid loops
+          echo 'src-link custom /custom_feed/packages' >> feeds.conf.default
           ./scripts/feeds update custom
           ./scripts/feeds install blackhole luci-app-blackhole
           
-          # Initialize config - only select our packages
-          # We use oldconfig instead of defconfig to see if it bypasses some checks,
-          # but we need a baseline.
-          [ -f .config ] || make defconfig
-          ./scripts/config --enable PACKAGE_blackhole
-          ./scripts/config --enable PACKAGE_luci-app-blackhole
-          # No need to enable golang manually if blackhole depends on it, 
-          # but we need it for Build/Compile.
-          ./scripts/config --enable PACKAGE_golang
+          # Initialize config
+          make defconfig
+          
+          # Find config script or use manual sed if missing
+          if [ -f ./scripts/config ]; then
+            ./scripts/config --enable PACKAGE_blackhole
+            ./scripts/config --enable PACKAGE_luci-app-blackhole
+            ./scripts/config --enable PACKAGE_golang
+          else
+            echo 'CONFIG_PACKAGE_blackhole=y' >> .config
+            echo 'CONFIG_PACKAGE_luci-app-blackhole=y' >> .config
+            echo 'CONFIG_PACKAGE_golang=y' >> .config
+          fi
+          
           make oldconfig
           
           # Build golang host tools
