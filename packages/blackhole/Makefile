@@ -19,10 +19,10 @@ endif
 
 ifneq ($(GOLANG_MK),)
   include $(GOLANG_MK)
-else
-  # Fallback to standard vars if mk file is missing
-  GO_BIN:=$(STAGING_DIR_HOSTPKG)/bin/go
 endif
+
+# Ensure GO_BIN is set, defaulting to standard hostpkg location
+GO_BIN?=$(STAGING_DIR_HOSTPKG)/bin/go
 
 define Package/blackhole
   SECTION:=utils
