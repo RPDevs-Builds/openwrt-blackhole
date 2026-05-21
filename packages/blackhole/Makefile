@@ -21,7 +21,7 @@ ifneq ($(GOLANG_MK),)
   include $(GOLANG_MK)
 else
   # Fallback to standard vars if mk file is missing
-  GO_BIN:=$(STAGING_DIR_HOST)/bin/go
+  GO_BIN:=$(STAGING_DIR_HOSTPKG)/bin/go
 endif
 
 define Package/blackhole
@@ -50,7 +50,7 @@ endef
 define Build/Compile
 	cd $(PKG_BUILD_DIR) && \
 	$(GO_PKG_VARS) \
-	$(STAGING_DIR_HOST)/bin/go build -v -o blackhole ./cmd/blackhole
+	$(GO_BIN) build -v -o blackhole ./cmd/blackhole
 endef
 
 define Package/blackhole/install

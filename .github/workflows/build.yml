@@ -112,6 +112,10 @@ jobs:
           # Build golang host tools
           make package/golang/compile V=s || { echo 'Golang build failed'; exit 1; }
           
+          # Locating go binary for debugging
+          echo \"Locating go binary:\"
+          find staging_dir -name go -type f -executable || true
+          
           # Build packages
           make package/blackhole/compile V=s || { echo 'Blackhole build failed'; exit 1; }
           make package/luci-app-blackhole/compile V=s || { echo 'LuCI app build failed'; exit 1; }
