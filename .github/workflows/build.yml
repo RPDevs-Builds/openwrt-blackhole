@@ -76,7 +76,9 @@ jobs:
           
           # Build PHASE
           rm -rf bin/packages
-          ./scripts/feeds update -a
+          
+          # Only update what we need
+          ./scripts/feeds update packages
           ./scripts/feeds install golang
           
           # Force link into include
@@ -86,17 +88,20 @@ jobs:
           
           echo 'src-link custom /custom_feed' >> feeds.conf.default
           ./scripts/feeds update custom
-          ./scripts/feeds install -a
+          ./scripts/feeds install blackhole luci-app-blackhole
           
-          # Initialize config
-          make defconfig
+          # Initialize config - only select our packages
+          # We use oldconfig instead of defconfig to see if it bypasses some checks,
+          # but we need a baseline.
+          [ -f .config ] || make defconfig
           ./scripts/config --enable PACKAGE_blackhole
           ./scripts/config --enable PACKAGE_luci-app-blackhole
+          # No need to enable golang manually if blackhole depends on it, 
+          # but we need it for Build/Compile.
           ./scripts/config --enable PACKAGE_golang
           make oldconfig
           
           # Build golang host tools
-          # Using -j$(nproc) to speed up if possible, but SDK might be sensitive
           make package/golang/compile V=s || { echo 'Golang build failed'; exit 1; }
           
           # List some environment info
