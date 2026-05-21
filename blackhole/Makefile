@@ -11,10 +11,7 @@ PKG_LICENSE_FILES:=LICENSE
 PKG_BUILD_DEPENDS:=golang/host
 include $(INCLUDE_DIR)/package.mk
 
-# Use the local source code since it's now bundled in the feed
-# We don't define PKG_SOURCE or PKG_SOURCE_URL to avoid downloading
-
-# We must include golang-package.mk from the feed
+# Link to golang-package.mk
 -include $(INCLUDE_DIR)/golang-package.mk
 
 define Package/blackhole
@@ -33,23 +30,19 @@ endef
 GO_PKG:=github.com/IamRPDev/blackhole-server
 GO_PKG_BUILD_PKG:=$(GO_PKG)/cmd/blackhole
 
-# If the source is local, we need to make sure the Go build system can find it.
-# We'll symlink the current directory into the Go workspace if needed, 
-# but usually for local packages in OpenWRT we can just define Build/Prepare.
-
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
 	$(CP) ./files $(PKG_BUILD_DIR)/
 endef
 
-# Standard Go compilation macros
-ifndef GoPackage/Build/Compile
+# Explicitly define compilation to avoid any ambiguity with golang-package.mk versions
 define Build/Compile
 	cd $(PKG_BUILD_DIR) && \
-	$(STAGING_DIR_HOST)/bin/go build -o blackhole ./cmd/blackhole
+	GOOS=linux \
+	GOARCH=$(ARCH) \
+	$(STAGING_DIR_HOST)/bin/go build -v -o blackhole ./cmd/blackhole
 endef
-endif
 
 define Package/blackhole/install
 	$(INSTALL_DIR) $(1)/usr/bin
@@ -60,5 +53,4 @@ define Package/blackhole/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/files/blackhole.init $(1)/etc/init.d/blackhole
 endef
 
-$(eval $(call GoPackage,blackhole))
 $(eval $(call BuildPackage,blackhole))
