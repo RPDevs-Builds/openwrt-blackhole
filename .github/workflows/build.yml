@@ -10,9 +10,20 @@ permissions:
   pages: write
   id-token: write
 
+
+env:
+  ANDROID_SDK_ROOT: /mnt/sharedroot/github_runners/shared/android-sdk
+  CARGO_HOME: /mnt/sharedroot/github_runners/shared/cargo-home
+  GOCACHE: /mnt/sharedroot/github_runners/shared/go-cache
+  PIP_CACHE_DIR: /mnt/sharedroot/github_runners/shared/pip-cache
+  POETRY_CACHE_DIR: /mnt/sharedroot/github_runners/shared/poetry-cache
+  NPM_CONFIG_CACHE: /mnt/sharedroot/github_runners/shared/npm-cache
+  CCACHE_DIR: /mnt/sharedroot/github_runners/shared/ccache
+  DOCKER_CONFIG: /mnt/sharedroot/github_runners/shared/docker-cache
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux64]
     
     steps:
     - name: Checkout Feed
