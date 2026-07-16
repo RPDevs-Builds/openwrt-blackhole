@@ -1,0 +1,22 @@
+{
+	"luci-app-blackhole": {
+		"description": "Grant access to blackhole configuration",
+		"read": {
+			"uci": [ "blackhole" ],
+			"file": [ "/mnt/largedata/blackholeserver/blackhole.log" ],
+			"ubus": {
+				"rc": [ "init" ],
+				"service": [ "list" ]
+			}
+		},
+		"write": {
+			"uci": [ "blackhole" ],
+			"file": [ "/mnt/largedata/blackholeserver/blackhole.log" ],
+			"ubus": {
+				"uci": [ "apply" ],
+				"rc": [ "init" ],
+				"service": [ "list" ]
+			}
+		}
+	}
+}
